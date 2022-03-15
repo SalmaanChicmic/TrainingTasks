@@ -5,18 +5,20 @@ const port: number = 3000;
 const host: string = "localhost";
 
 function readUserData(id?: number) {
+  // please enter the absoluter path for the file
+
   const buffer: Buffer = readFileSync(
-    "/home/test/Documents/Salmaan/training-tasks/01-file_read_write_api/data.json"
+    "/home/test/Documents/Salmaan/TrainingTasks/01-file_read_write_api/data.json"
   );
   const data = buffer;
 
-  if (!id) {
-    return data;
+  const parsedData = JSON.parse(data.toString());
+
+  if (id! < 1 || id! > parsedData.length) {
+    return `Invalid User Id! User ${id} does not exist`;
   }
 
-  const userData = JSON.parse(data.toString())[id - 1];
-
-  if (!userData) return `Invalid User Id! User ${id} does not exist`;
+  const userData = parsedData[id! - 1];
 
   return userData;
 }
