@@ -1,41 +1,62 @@
-import { createServer, get, request, Server } from "http";
-import { readFileSync } from "fs";
+import { createServer } from "http";
+
+import { addUserToFile, deleteUser, readUserData } from "./utils";
 
 const port: number = 3000;
 const host: string = "localhost";
 
-function readUserData(id?: number) {
-  // please enter the absoluter path for the file
-
-  const buffer: Buffer = readFileSync(
-    "/home/test/Documents/Salmaan/TrainingTasks/01-file_read_write_api/data.json"
-  );
-  const data = buffer;
-
-  const parsedData = JSON.parse(data.toString());
-
-  if (id! < 1 || id! > parsedData.length) {
-    return `Invalid User Id! User ${id} does not exist`;
-  }
-
-  const userData = parsedData[id! - 1];
-
-  return userData;
-}
-
-// console.log(readUserData(30));
-
 const server = createServer(async (req, res) => {
   if (req.url === "/users" && req.method === "GET") {
-    res.write(JSON.stringify(readUserData()));
+    res.writeHead(200, { "content-type": "application/json" });
+    res.write(readUserData());
+    res.end();
   }
 
   if (req.url!.match(/\/user\/([0-9]+)/) && req.method === "GET") {
     const id: number = +req.url!.split("/")[2];
-    res.write(JSON.stringify(readUserData(id)));
+
+    res.writeHead(200, { "content-type": "application/json" });
+    res.write(readUserData(id));
+
+    res.end();
   }
-  res.end();
+
+  if (req.url === "/user" && req.method === "POST") {
+    const id: number = +req.url!.split("/")[2];
+
+    try {
+      let body = "";
+      // listen to data sent by client
+      req.on("data", (chunk) => {
+        // append the string version to the body
+        body += chunk.toString();
+      });
+      // listen till the end
+      req.on("end", () => {
+        // send back the data
+        // console.log(body);
+
+        addUserToFile(body);
+      });
+    } catch (error: any) {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(error.message);
+    }
+
+    res.write("add path");
+    res.end();
+  }
+
+  if (req.url!.match(/\/user\/([0-9]+)/) && req.method === "DELETE") {
+    const id: number = +req.url!.split("/")[2];
+
+    res.writeHead(200, { "content-type": "application/json" });
+    deleteUser(id);
+
+    res.end(`User ${id} is now deleted `);
+  }
 });
+
 server.listen(port, host, () => {
   console.log(`server running a port: ${port}`);
 });
