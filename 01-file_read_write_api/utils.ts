@@ -1,3 +1,4 @@
+import { rejects } from "assert";
 import {
   readFileSync,
   open,
@@ -5,13 +6,12 @@ import {
   appendFileSync,
   writeFileSync,
 } from "fs";
+import { resolve } from "path";
+
+const filePath: string = __dirname + "/data.json";
 
 export function readUserData(id?: number): string {
-  // please enter the absolute path for the data file
-
-  const pathName: string = __dirname + "/data.json";
-
-  const buffer: Buffer = readFileSync(pathName);
+  const buffer: Buffer = readFileSync(filePath);
   const data = buffer;
 
   if (id === undefined) return data.toString();
@@ -27,32 +27,44 @@ export function readUserData(id?: number): string {
   return JSON.stringify(userData);
 }
 
-export async function addUserToFile(body: string) {
+export function addUserToFile(body: string): boolean {
   const newUser = JSON.parse(body);
 
-  const pathName: string = __dirname + "/data.json";
-
-  const file = openSync(pathName, "r+");
+  const file = openSync(filePath, "r+");
 
   const data = JSON.parse(readFileSync(file).toString());
 
-  if (data[newUser.id]) throw new Error("User with this id exists already");
+  if (data[newUser.id]) return false;
 
   const newData = { ...data, [newUser.id]: newUser };
 
-  console.log(newData);
-
   writeFileSync(__dirname + "/data.json", JSON.stringify(newData));
+
+  return true;
 }
 
 export function deleteUser(id: number) {
-  const pathName: string = __dirname + "/data.json";
-
-  const file = openSync(pathName, "r+");
+  const file = openSync(filePath, "r+");
 
   const data = JSON.parse(readFileSync(file).toString());
 
   delete data[id];
 
   writeFileSync(__dirname + "/data.json", JSON.stringify(data));
+}
+
+export function updateUser(body: string): boolean {
+  const newUser = JSON.parse(body);
+
+  const file = openSync(filePath, "r+");
+
+  const data = JSON.parse(readFileSync(file).toString());
+
+  if (!data[newUser.id]) return false;
+
+  data[newUser.id] = newUser;
+
+  writeFileSync(__dirname + "/data.json", JSON.stringify(data));
+
+  return true;
 }
