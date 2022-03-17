@@ -1,4 +1,5 @@
 import { createServer } from "http";
+import url from "url";
 
 import { addUserToFile, deleteUser, readUserData, updateUser } from "./utils";
 
@@ -6,20 +7,27 @@ const port: number = 3000;
 const host: string = "localhost";
 
 const server = createServer(async (req, res) => {
-  if (req.url === "/users" && req.method === "GET") {
+  if (req.url?.match(/\/user\/*/) && req.method === "GET") {
     res.writeHead(200, { "content-type": "application/json" });
-    res.write(readUserData());
-    res.end();
+
+    const parsedUrl = url.parse(req.url as string);
+
+    if (!parsedUrl.search) {
+      res.write(readUserData());
+      res.end();
+      return;
+    }
   }
 
-  if (req.url!.match(/\/user\/([0-9]+)/) && req.method === "GET") {
-    const id: number = +req.url!.split("/")[2];
+  // if (req.url!.match(/\/user\/([0-9]+)/) && req.method === "GET") {
+  //   const id: number = +req.url!.split("/")[2];
 
-    res.writeHead(200, { "content-type": "application/json" });
-    res.write(readUserData(id));
+  //   res.writeHead(200, { "content-type": "application/json" });
+  //   res.write(readUserData(id));
 
-    res.end();
-  }
+  //   res.end();
+  //   return;
+  // }
 
   if (req.url === "/user" && req.method === "POST") {
     const id: number = +req.url!.split("/")[2];
@@ -42,6 +50,8 @@ const server = createServer(async (req, res) => {
         res.end("User Exists Already");
       }
     });
+
+    return;
   }
 
   if (req.url!.match(/\/user\/([0-9]+)/) && req.method === "DELETE") {
@@ -51,6 +61,8 @@ const server = createServer(async (req, res) => {
     deleteUser(id);
 
     res.end(`User ${id} is now deleted `);
+
+    return;
   }
 
   if (req.url!.match("/user") && req.method === "PUT") {
@@ -75,7 +87,11 @@ const server = createServer(async (req, res) => {
         res.end("User does not exist.");
       }
     });
+
+    return;
   }
+
+  res.end("invalid endpoint");
 });
 
 server.listen(port, host, () => {
