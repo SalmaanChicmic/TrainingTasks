@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import { User } from "../interfaces/User.Interface";
 import { addUserToFile, deleteUser, readUserData, updateUser } from "../utils";
 
+// fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
+
 const app = express();
 app.use(express.json());
 

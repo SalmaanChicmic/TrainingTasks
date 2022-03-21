@@ -7,7 +7,7 @@ const port: number = 3000;
 const host: string = "localhost";
 
 const server = createServer(async (req, res) => {
-  if (req.url?.match(/\/user\/*/) && req.method === "GET") {
+  if (req.url?.match(/\/users\/*/) && req.method === "GET") {
     res.writeHead(200, { "content-type": "application/json" });
 
     const parsedUrl = url.parse(req.url as string);
@@ -15,19 +15,14 @@ const server = createServer(async (req, res) => {
     if (!parsedUrl.search) {
       res.write(readUserData());
       res.end();
+    } else {
+      const id: number = +parsedUrl.search.split("=")[1];
+      res.write(readUserData(id));
+      res.end();
+
       return;
     }
   }
-
-  // if (req.url!.match(/\/user\/([0-9]+)/) && req.method === "GET") {
-  //   const id: number = +req.url!.split("/")[2];
-
-  //   res.writeHead(200, { "content-type": "application/json" });
-  //   res.write(readUserData(id));
-
-  //   res.end();
-  //   return;
-  // }
 
   if (req.url === "/user" && req.method === "POST") {
     const id: number = +req.url!.split("/")[2];
