@@ -1,50 +1,55 @@
-import bcrypt from "bcrypt";
-
 import express, { Request, response, Response } from "express";
 
-import { ServerResponse, User } from "../Interface/Interface";
-import { getUsers, login, saveUser } from "../utils/utils";
+import multer from "multer";
+
+import {
+  allUsers,
+  checkUserAuthorized,
+  home,
+  login,
+  signup,
+  updateEmail,
+  updateName,
+  uploadFile,
+} from "./routes/routes";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, __dirname + "/../uploads");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix =
+      Date.now() + "-" + Math.round(Math.random() * 10) + ".png";
+    cb(null, file.fieldname + "-" + uniqueSuffix);
+  },
+});
+
+const upload = multer({ storage });
 
 const port = 3000;
 const app = express();
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req: Request, res: Response) => {
-  res.status(200).send("Hello");
-});
+app.get("/", home);
 
-app.get("/users", (req: Request, res: Response) => {
-  if (!req.headers.authorization) {
-    res.status(200).send("Access Token Not Present");
-    return;
-  }
+app.post("/signup", signup);
 
-  const token: string = req.headers.authorization.split(" ")[1];
+app.post("/login", login);
 
-  const response: string = getUsers(token);
-  res.status(200).send(response);
-});
+app.get("/users", checkUserAuthorized, allUsers);
 
-app.post("/signup", async (req: Request, res: Response) => {
-  const { name, email, password } = req.body;
+app.post("/updateEmail", checkUserAuthorized, updateEmail);
 
-  const hashedPassword = await bcrypt.hash(req.body.password, 10);
+app.post("/updateName", checkUserAuthorized, updateName);
 
-  const user = { name, email, password: hashedPassword };
+app.post(
+  "/profile",
+  checkUserAuthorized,
+  upload.single("freshFile"),
 
-  const response: ServerResponse = saveUser(user);
-
-  res.status(response.status).send(response.message);
-});
-
-app.post("/login", async (req: Request, res: Response) => {
-  console.log(req.body);
-
-  const response: ServerResponse = await login(req.body);
-
-  res.status(response.status).send(response.message);
-});
+  uploadFile
+);
 
 app.listen(port, () => {
   console.log("up and running");
