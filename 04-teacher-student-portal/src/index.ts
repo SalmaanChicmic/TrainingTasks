@@ -1,5 +1,14 @@
 import express from "express";
-import { login, signupStudent, signupTeacher } from "./routes/routes";
+import { authorizeUser, onlyTeacher } from "./controller/controller";
+import {
+  giveMarks,
+  login,
+  signupStudent,
+  signupTeacher,
+  students,
+  teachers,
+  userInfo,
+} from "./routes/routes";
 
 const port = 3000;
 
@@ -9,14 +18,10 @@ app.use(express.json());
 app.post("/teacher-signup", signupTeacher);
 app.post("/student-signup", signupStudent);
 app.post("/login", login);
-
-app.post("/login");
-
-// app.post("/login", login);
-
-// app.get("/users", checkUserAuthorized, allUsers);
-
-// app.post("/updateEmail", checkUserAuthorized, updateEmail);
+app.get("/myinfo", authorizeUser, userInfo);
+app.post("/givemarks", authorizeUser, onlyTeacher, giveMarks);
+app.get("/students", authorizeUser, onlyTeacher, students);
+app.get("/teachers", authorizeUser, onlyTeacher, teachers);
 
 app.listen(port, () => {
   console.log("up and running");

@@ -1,11 +1,10 @@
-import bcrypt from "bcrypt";
 import {
   ServerResponse,
   User,
   updateEmailBody,
   updateNameBody,
 } from "../Interface/Interface";
-import express, { NextFunction, Request, response, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
   getUsers,
   getAccess,

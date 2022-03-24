@@ -10,6 +10,17 @@ export interface Student {
   name: string;
   email: string;
   password: string;
+  marks?: Marks;
+}
+
+export interface Marks {
+  English?: number;
+  Hindi?: number;
+  CS?: number;
+  Maths?: number;
+  Science?: number;
+  SST?: number;
+  Physical?: number;
 }
 
 export interface Teacher {
