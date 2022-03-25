@@ -14,13 +14,12 @@ export interface Student {
 }
 
 export interface Marks {
-  English?: number;
-  Hindi?: number;
-  CS?: number;
-  Maths?: number;
-  Science?: number;
-  SST?: number;
-  Physical?: number;
+  english?: number;
+  hindi?: number;
+  computers?: number;
+  maths?: number;
+  science?: number;
+  physical?: number;
 }
 
 export interface Teacher {
@@ -31,10 +30,18 @@ export interface Teacher {
 
 export interface ServerResponse {
   status: number;
-  message: string;
+  message?: string;
+  accessToken?: string;
 }
 
 export interface UserSignIn {
   email: string;
   password: string;
+}
+
+export interface userDataResponse {
+  name: string;
+  email: string;
+  marks?: {} | Marks;
+  subject?: string;
 }

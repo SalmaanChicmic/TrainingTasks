@@ -18,6 +18,7 @@ app.use(express.json());
 app.post("/teacher-signup", signupTeacher);
 app.post("/student-signup", signupStudent);
 app.post("/login", login);
+// app.post("/verify", verifyEmail);
 app.get("/myinfo", authorizeUser, userInfo);
 app.post("/givemarks", authorizeUser, onlyTeacher, giveMarks);
 app.get("/students", authorizeUser, onlyTeacher, students);

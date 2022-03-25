@@ -3,9 +3,8 @@ import {
   addUser,
   getAccess,
   getStudent,
-  getStudents,
   getTeacher,
-  getTeachers,
+  getUsers,
   giveMarksToStudent,
 } from "../controller/controller";
 import {
@@ -13,17 +12,37 @@ import {
   ServerResponse,
   Student,
   Teacher,
+  userDataResponse,
   UserSignUp,
 } from "../interface/interface";
+import {
+  giveMarksSchema,
+  studentSignupSchema,
+  teacherSignupSchema,
+} from "../validation/schemas";
 
 export const signupTeacher = async (req: Request, res: Response) => {
   const body: UserSignUp = req.body;
+  const result = teacherSignupSchema.validate(body);
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+
   const response: ServerResponse = await addUser("Teacher", body);
   res.status(response.status).json(response);
 };
 
 export const signupStudent = async (req: Request, res: Response) => {
   const body: UserSignUp = req.body;
+  const result = studentSignupSchema.validate(body);
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+
   const response: ServerResponse = await addUser("Student", body);
   res.status(response.status).json(response);
 };
@@ -38,17 +57,31 @@ export const userInfo = (req: Request, res: Response) => {
 
   const user: any = req.body.user;
 
-  let userData: Student | Teacher;
+  let userData: userDataResponse | undefined;
 
   if (role === "Student") userData = getStudent(user.email);
 
   if (role === "Teacher") userData = getTeacher(user.email);
 
-  res.status(200).json(userData!);
+  if (!userData) {
+    res.status(404).json({ status: 404, message: "User not found." });
+    return;
+  }
+
+  res.status(200).json(userData);
 };
 
 export const giveMarks = (req: Request, res: Response) => {
-  giveMarksToStudent(req.body.email, req.body.marks);
+  const body = req.body;
+
+  const result = giveMarksSchema.validate(body);
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+
+  giveMarksToStudent(body.email, body.marks);
 
   res.status(200).json({ message: "Done" });
 };
@@ -56,7 +89,7 @@ export const giveMarks = (req: Request, res: Response) => {
 export const students = (req: Request, res: Response) => {
   const email: string | undefined = req.query.email as string;
 
-  const response = getStudents(email);
+  const response = getUsers("Student", email);
 
   if (response.length === 0) {
     res.status(200).json({ status: 404, message: "User Not Found" });
@@ -68,7 +101,7 @@ export const students = (req: Request, res: Response) => {
 export const teachers = (req: Request, res: Response) => {
   const email: string | undefined = req.query.email as string;
 
-  const response = getTeachers(email);
+  const response = getUsers("Teacher", email);
 
   if (response.length === 0) {
     res.status(200).json({ status: 404, message: "User Not Found" });
@@ -76,3 +109,5 @@ export const teachers = (req: Request, res: Response) => {
     res.status(200).json(response);
   }
 };
+
+// export const verifyEmail = ()

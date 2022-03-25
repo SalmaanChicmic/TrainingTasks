@@ -13,6 +13,8 @@ import {
   uploadFile,
 } from "./routes/routes";
 
+import cors from "cors";
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, __dirname + "/../uploads");
@@ -29,18 +31,25 @@ const upload = multer({ storage });
 const port = 5000;
 const app = express();
 
+app.use(cors());
+
+app.use(function (req, res, next) {
+  console.log("Request Ayi hai: ", req.url);
+
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
 app.use(express.json());
-
 app.get("/", home);
-
 app.post("/signup", signup);
-
 app.post("/login", login);
-
 app.get("/users", checkUserAuthorized, allUsers);
-
 app.post("/updateEmail", checkUserAuthorized, updateEmail);
-
 app.post("/updateName", checkUserAuthorized, updateName);
 
 app.post(

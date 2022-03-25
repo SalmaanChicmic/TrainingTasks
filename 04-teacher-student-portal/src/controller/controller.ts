@@ -6,6 +6,7 @@ import {
   ServerResponse,
   Student,
   Teacher,
+  userDataResponse,
   UserSignIn,
   UserSignUp,
 } from "../interface/interface";
@@ -13,6 +14,7 @@ import jwt, { Jwt } from "jsonwebtoken";
 import process from "../../config";
 import { NextFunction } from "express";
 import { openAndReadFile, writeUserDataToFile } from "../utils/utils.fs";
+import { type } from "os";
 
 export const authorizeUser = (
   req: Request,
@@ -127,27 +129,46 @@ export const getAccess = async (user: UserSignIn): Promise<ServerResponse> => {
     );
   }
 
-  if (passwordMatched) {
-    return { status: 200, message: accessToken! };
+  if (passwordMatched && accessToken!) {
+    return { status: 200, accessToken: accessToken };
   } else {
     return { status: 400, message: "Invalid Credentials" };
   }
 };
 
-export const getStudent = (email: string): Student => {
+export const getStudent = (email: string): userDataResponse | undefined => {
   const students: Array<Student> = openAndReadFile("Student");
 
-  const userFound: Student = students.find((item) => item.email === email)!;
+  const user: Student = students.find((item) => item.email === email)!;
 
-  return userFound;
+  if (user) {
+    const cleanedUser = {
+      name: user.name,
+      email: user.email,
+      marks: user.marks ? user.marks : {},
+    };
+
+    return cleanedUser;
+  }
+
+  return undefined;
 };
 
-export const getTeacher = (email: string): Teacher => {
+export const getTeacher = (email: string): userDataResponse | undefined => {
   const teachers: Array<Teacher> = openAndReadFile("Teacher");
 
-  const userFound: Student = teachers.find((item) => item.email === email)!;
+  const user: Teacher = teachers.find((item) => item.email === email)!;
 
-  return userFound;
+  if (user) {
+    const cleanedUser = {
+      name: user.name,
+      email: user.email,
+    };
+
+    return cleanedUser;
+  }
+
+  return undefined;
 };
 
 export const giveMarksToStudent = (email: string, marks: Marks) => {
@@ -167,22 +188,30 @@ export const giveMarksToStudent = (email: string, marks: Marks) => {
   writeUserDataToFile("Student", students);
 };
 
-export const getStudents = (email?: string): Array<Student> => {
+export const getUsers = (
+  role: Role,
+  email?: string
+): Array<userDataResponse> => {
   if (email) {
     const student = getStudent(email);
     if (student) return [student];
     else return [];
-  } else {
-    return openAndReadFile("Student");
   }
-};
 
-export const getTeachers = (email?: string): Array<Teacher> => {
-  if (email) {
-    const student = getTeacher(email);
-    if (student) return [student];
-    else return [];
-  } else {
-    return openAndReadFile("Teacher");
-  }
+  const users: Array<Student> | Array<Teacher> = openAndReadFile(role);
+
+  const cleaned: any = users.map(
+    (item: Student | Teacher): userDataResponse | undefined => {
+      if (role == "Teacher") return { email: item.email, name: item.name };
+      if (role == "Student")
+        return {
+          name: item.name,
+          email: item.email,
+          // @ts-ignore
+          marks: item.marks ? item.marks : {},
+        };
+    }
+  );
+
+  return cleaned;
 };
