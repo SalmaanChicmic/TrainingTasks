@@ -35,3 +35,13 @@ export const giveMarksSchema = Joi.object().keys({
   marks: marks.required(),
   user: Joi.object(),
 });
+
+export const loginSchema = Joi.object().keys({
+  email: Joi.string().min(3).required().email(),
+  password: Joi.string().min(5).max(15).regex(passwordRegex).required(),
+});
+
+export const otpSchema = Joi.object().keys({
+  email: Joi.string().min(3).required().email(),
+  otp: Joi.string().length(6),
+});

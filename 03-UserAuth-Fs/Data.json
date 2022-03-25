@@ -1,1 +1,47 @@
-[{"name":"salmaan","email":"leosalmaan5@gmail.com","password":"$2b$10$c58DqVqq./SguHlgMZXv9OqB6.JSIKN6yeC2L7.eURdrBZxE9PFOa"},{"name":"Tutty","email":"leosalmaan52@gmail.com","password":"$2b$10$mJlQ.bpSyd6QjpFjEpLwOu4xg/eIfRojxv76erJ4iGvMGhH2rIoDK"},{"name":"nand","email":"nand52@gmail.com","password":"$2b$10$qApvitkC8SLZTMXlZ1Es6uxjnTR66C3BJKu.UmNlnyWPROwivA20O"},{"name":"salmaan","email":"sup@to.com","password":"$2b$10$iV6UJW1/kwqJvJh4IIHXBuruezPGN9ynZC5Bc1tfT48u6hrNNg2ei"},{"name":"salmaan","email":"newmail@gmail.com","password":"$2b$10$IKmlLEhXt.4nwlHhor73uOCJacPS/lQGUD4xOV.pc0FJ8TuFM6CJW"},{"name":"andy","email":"andrew@gmail.com","password":"$2b$10$k8XU2NIjlNCQPr2ipU.U.OPQgMYZRY/KxQEvbAvfLQ3gsp5w3mkYe"},{"name":"stephen","email":"sup@to.com","password":"$2b$10$J9MYEZVZfscy02GFHiDSy.hvdAee4CLSkiBymx2mP9zDeiK/676ay"},{"name":"Baljeet","email":"baljeet@gmail.com","password":"$2b$10$S55mkuSyPnWJfQSHflx0bOPpOd4jZzmEo3zwSEaZqM90KQ0bMMjr6"}]
+[
+  {
+    "name": "salmaan",
+    "email": "leosalmaan5@gmail.com",
+    "password": "$2b$10$c58DqVqq./SguHlgMZXv9OqB6.JSIKN6yeC2L7.eURdrBZxE9PFOa"
+  },
+  {
+    "name": "Tutty",
+    "email": "leosalmaan52@gmail.com",
+    "password": "$2b$10$mJlQ.bpSyd6QjpFjEpLwOu4xg/eIfRojxv76erJ4iGvMGhH2rIoDK"
+  },
+  {
+    "name": "nand",
+    "email": "nand52@gmail.com",
+    "password": "$2b$10$qApvitkC8SLZTMXlZ1Es6uxjnTR66C3BJKu.UmNlnyWPROwivA20O"
+  },
+  {
+    "name": "salmaan",
+    "email": "sup@to.com",
+    "password": "$2b$10$iV6UJW1/kwqJvJh4IIHXBuruezPGN9ynZC5Bc1tfT48u6hrNNg2ei"
+  },
+  {
+    "name": "salmaan",
+    "email": "newmail@gmail.com",
+    "password": "$2b$10$IKmlLEhXt.4nwlHhor73uOCJacPS/lQGUD4xOV.pc0FJ8TuFM6CJW"
+  },
+  {
+    "name": "andy",
+    "email": "andrew@gmail.com",
+    "password": "$2b$10$k8XU2NIjlNCQPr2ipU.U.OPQgMYZRY/KxQEvbAvfLQ3gsp5w3mkYe"
+  },
+  {
+    "name": "stephen",
+    "email": "sup@to.com",
+    "password": "$2b$10$J9MYEZVZfscy02GFHiDSy.hvdAee4CLSkiBymx2mP9zDeiK/676ay"
+  },
+  {
+    "name": "Baljeet",
+    "email": "baljeet@gmail.com",
+    "password": "$2b$10$S55mkuSyPnWJfQSHflx0bOPpOd4jZzmEo3zwSEaZqM90KQ0bMMjr6"
+  },
+  {
+    "name": "baljeet",
+    "email": "abc@gmail.com",
+    "password": "$2b$10$OQ5ZJAJQNPrBDMBt1aV.Mu4T7SchJv.Y9SbSv2f4KC7Zz8wg.HDvO"
+  }
+]

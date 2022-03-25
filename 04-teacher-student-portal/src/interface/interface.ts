@@ -4,6 +4,7 @@ export interface UserSignUp {
   name: string;
   email: string;
   password: string;
+  emailVerified: boolean;
 }
 
 export interface Student {
@@ -11,6 +12,7 @@ export interface Student {
   email: string;
   password: string;
   marks?: Marks;
+  emailVerified: boolean;
 }
 
 export interface Marks {
@@ -26,6 +28,7 @@ export interface Teacher {
   name: string;
   email: string;
   password: string;
+  emailVerified: boolean;
 }
 
 export interface ServerResponse {
@@ -44,4 +47,9 @@ export interface userDataResponse {
   email: string;
   marks?: {} | Marks;
   subject?: string;
+}
+
+export interface EmailOtp {
+  email: string;
+  otp: string;
 }

@@ -1,6 +1,8 @@
 import express from "express";
 import { authorizeUser, onlyTeacher } from "./controller/controller";
 import {
+  checkOtp,
+  forgotPassword,
   giveMarks,
   login,
   signupStudent,
@@ -8,6 +10,7 @@ import {
   students,
   teachers,
   userInfo,
+  verifyEmail,
 } from "./routes/routes";
 
 const port = 3000;
@@ -18,7 +21,9 @@ app.use(express.json());
 app.post("/teacher-signup", signupTeacher);
 app.post("/student-signup", signupStudent);
 app.post("/login", login);
-// app.post("/verify", verifyEmail);
+app.post("/verify", checkOtp);
+app.post("/otp", verifyEmail);
+app.post("/forgot", forgotPassword);
 app.get("/myinfo", authorizeUser, userInfo);
 app.post("/givemarks", authorizeUser, onlyTeacher, giveMarks);
 app.get("/students", authorizeUser, onlyTeacher, students);

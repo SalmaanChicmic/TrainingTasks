@@ -10,11 +10,18 @@ import {
   UserSignIn,
   UserSignUp,
 } from "../interface/interface";
-import jwt, { Jwt } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import process from "../../config";
 import { NextFunction } from "express";
-import { openAndReadFile, writeUserDataToFile } from "../utils/utils.fs";
-import { type } from "os";
+import {
+  matchOtpWithFile,
+  openAndReadFile,
+  writeOtpToFile,
+  writeUserDataToFile,
+} from "../utils/utils.fs";
+import { checkPassword } from "../utils/password.jwt";
+import OTP from "otp-generator";
+import { sendEmailToAddress } from "../utils/email.nodemailer";
 
 export const authorizeUser = (
   req: Request,
@@ -63,6 +70,7 @@ export const addUser = async (
   const hashedPassword = await bcrypt.hash(user.password, 10);
 
   user.password = hashedPassword;
+  user.emailVerified = false;
 
   const existingData: Array<Student> | Array<Teacher> = openAndReadFile(role);
 
@@ -80,60 +88,22 @@ export const addUser = async (
 };
 
 export const getAccess = async (user: UserSignIn): Promise<ServerResponse> => {
-  const existingStudents: Array<Student> = openAndReadFile("Student");
-  const existingTeachers: Array<Teacher> = openAndReadFile("Teacher");
+  const response = await checkPassword(user);
 
-  const existingStudentData = existingStudents.find(
-    (item) => item.email === user.email
+  if (response.status !== 200) {
+    return response;
+  }
+
+  if (!response.data?.emailVerified) {
+    return { status: 400, message: "Your Email is not verified!" };
+  }
+
+  let accessToken: string = jwt.sign(
+    JSON.stringify(response.data),
+    process.env.ACCESS_TOKEN_SECRET as string
   );
 
-  const existingTeacherData = existingTeachers.find(
-    (item) => item.email === user.email
-  );
-
-  if (!(existingStudentData || existingTeacherData))
-    return { status: 400, message: "User Does Not Exist" };
-
-  let passwordMatched: boolean = false;
-  let accessToken: string;
-
-  if (existingStudentData) {
-    passwordMatched = await bcrypt.compare(
-      user.password,
-      existingStudentData.password
-    );
-
-    accessToken = jwt.sign(
-      JSON.stringify({
-        user: existingStudentData.name,
-        email: existingStudentData.email,
-        role: "Student",
-      }),
-      process.env.ACCESS_TOKEN_SECRET as string
-    );
-  }
-
-  if (existingTeacherData) {
-    passwordMatched = await bcrypt.compare(
-      user.password,
-      existingTeacherData.password
-    );
-
-    accessToken = jwt.sign(
-      JSON.stringify({
-        user: existingTeacherData.name,
-        email: existingTeacherData.email,
-        role: "Teacher",
-      }),
-      process.env.ACCESS_TOKEN_SECRET as string
-    );
-  }
-
-  if (passwordMatched && accessToken!) {
-    return { status: 200, accessToken: accessToken };
-  } else {
-    return { status: 400, message: "Invalid Credentials" };
-  }
+  return { status: 200, accessToken: accessToken };
 };
 
 export const getStudent = (email: string): userDataResponse | undefined => {
@@ -214,4 +184,34 @@ export const getUsers = (
   );
 
   return cleaned;
+};
+
+export const sendMail = async (user: UserSignIn) => {
+  const response = await checkPassword(user);
+
+  if (response.status !== 200) {
+    return response;
+  }
+
+  if (response.data?.emailVerified) {
+    return { status: 200, message: "Your Email is already verified!" };
+  }
+
+  const otp = OTP.generate(6, {
+    upperCaseAlphabets: false,
+    specialChars: false,
+    lowerCaseAlphabets: false,
+  });
+
+  writeOtpToFile({ email: user.email, otp: otp });
+
+  if (await sendEmailToAddress(user.email, otp)) {
+    return { status: 200, message: "Success." };
+  } else {
+    return { status: 400, message: "Something went wrong." };
+  }
+};
+
+export const verifyotp = (email: string, otp: string) => {
+  return matchOtpWithFile(email, otp);
 };

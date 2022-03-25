@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import {
   addUser,
   getAccess,
@@ -6,6 +6,8 @@ import {
   getTeacher,
   getUsers,
   giveMarksToStudent,
+  sendMail,
+  verifyotp,
 } from "../controller/controller";
 import {
   Role,
@@ -17,6 +19,8 @@ import {
 } from "../interface/interface";
 import {
   giveMarksSchema,
+  loginSchema,
+  otpSchema,
   studentSignupSchema,
   teacherSignupSchema,
 } from "../validation/schemas";
@@ -48,6 +52,14 @@ export const signupStudent = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
+  const body = req.body;
+  const result = loginSchema.validate(body);
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+
   const response: ServerResponse = await getAccess(req.body);
   res.status(response.status).json(response);
 };
@@ -110,4 +122,32 @@ export const teachers = (req: Request, res: Response) => {
   }
 };
 
-// export const verifyEmail = ()
+export const verifyEmail = async (req: Request, res: Response) => {
+  const body = req.body;
+  const result = loginSchema.validate(body);
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+
+  const response = await sendMail(result.value);
+
+  res.status(response.status).json(response);
+};
+
+export const checkOtp = (req: Request, res: Response) => {
+  const body = req.body;
+  const result = otpSchema.validate(body);
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+
+  const response = verifyotp(result.value.email, result.value.otp);
+
+  res.status(response.status).json(response);
+};
+
+export const forgotPassword = () => {};

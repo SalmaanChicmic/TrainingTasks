@@ -1,9 +1,12 @@
 import { openSync, readFileSync, writeFileSync } from "fs";
-import { Role, Student, Teacher } from "../interface/interface";
+import { string } from "joi";
+import { EmailOtp, Role, Student, Teacher } from "../interface/interface";
+import { setEmailVerified } from "./password.jwt";
 
 const studentDataPath = __dirname + "/../../data/student.json";
 const teacherDataPath = __dirname + "/../../data/teachers.json";
 const subjectDataPath = __dirname + "/../../data/subjects.json";
+const otpDataPath = __dirname + "/../../data/otps.json";
 
 export const openAndReadFile = (role: Role) => {
   if (role === "Student") {
@@ -30,4 +33,24 @@ export const writeUserDataToFile = (
   if (role === "Teacher") {
     writeFileSync(teacherDataPath, JSON.stringify(existingData));
   }
+};
+
+export const writeOtpToFile = (emailnotp: EmailOtp) => {
+  const otpFile = openSync(otpDataPath, "r+");
+  const otpBuffer = readFileSync(otpFile, "utf-8");
+  const otps = JSON.parse(otpBuffer);
+
+  otps[emailnotp.email] = emailnotp.otp;
+
+  writeFileSync(otpDataPath, JSON.stringify(otps));
+};
+
+export const matchOtpWithFile = (email: string, otp: string) => {
+  const otpFile = openSync(otpDataPath, "r+");
+  const otpBuffer = readFileSync(otpFile, "utf-8");
+  const otps = JSON.parse(otpBuffer);
+
+  if (otps[email] !== otp) return { status: 400, message: "Incorrect Otp." };
+
+  return setEmailVerified(email);
 };
