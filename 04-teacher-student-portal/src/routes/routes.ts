@@ -7,7 +7,9 @@ import {
   getUsers,
   giveMarksToStudent,
   sendMail,
+  sendResetMail,
   verifyotp,
+  verifyToken,
 } from "../controller/controller";
 import {
   Role,
@@ -17,6 +19,7 @@ import {
   userDataResponse,
   UserSignUp,
 } from "../interface/interface";
+import { findUser } from "../utils/password.jwt";
 import {
   giveMarksSchema,
   loginSchema,
@@ -122,7 +125,7 @@ export const teachers = (req: Request, res: Response) => {
   }
 };
 
-export const verifyEmail = async (req: Request, res: Response) => {
+export const getOtp = async (req: Request, res: Response) => {
   const body = req.body;
   const result = loginSchema.validate(body);
 
@@ -133,7 +136,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
   const response = await sendMail(result.value);
 
-  res.status(response.status).json(response);
+  res.status((response as ServerResponse).status).json(response);
 };
 
 export const checkOtp = (req: Request, res: Response) => {
@@ -150,4 +153,25 @@ export const checkOtp = (req: Request, res: Response) => {
   res.status(response.status).json(response);
 };
 
-export const forgotPassword = () => {};
+export const forgotPassword = (req: Request, res: Response) => {
+  const body = req.body;
+  const email = body.email;
+  const result = findUser(email);
+
+  if ((result as ServerResponse).status) {
+    res.status((result as ServerResponse).status).send(result);
+  }
+
+  const response = sendResetMail(email);
+
+  res.send(response);
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const token = req.params.token;
+  const body = req.body;
+
+  const response = await verifyToken(token, body.newPassword);
+
+  res.send(response);
+};

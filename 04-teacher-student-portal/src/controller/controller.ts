@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import {
   Marks,
+  Result,
   Role,
   ServerResponse,
   Student,
@@ -19,7 +20,7 @@ import {
   writeOtpToFile,
   writeUserDataToFile,
 } from "../utils/utils.fs";
-import { checkPassword } from "../utils/password.jwt";
+import { checkPassword, updatePassword } from "../utils/password.jwt";
 import OTP from "otp-generator";
 import { sendEmailToAddress } from "../utils/email.nodemailer";
 
@@ -42,7 +43,6 @@ export const authorizeUser = (
 
       next();
     } catch (err) {
-      console.log(err);
       res.status(403).json({ status: 403, message: "Not Authorized" });
     }
   }
@@ -90,16 +90,16 @@ export const addUser = async (
 export const getAccess = async (user: UserSignIn): Promise<ServerResponse> => {
   const response = await checkPassword(user);
 
-  if (response.status !== 200) {
-    return response;
+  if ((response as ServerResponse).status !== 200) {
+    return response as ServerResponse;
   }
 
-  if (!response.data?.emailVerified) {
+  if (!(response as Result).data?.emailVerified) {
     return { status: 400, message: "Your Email is not verified!" };
   }
 
   let accessToken: string = jwt.sign(
-    JSON.stringify(response.data),
+    JSON.stringify((response as Result).data),
     process.env.ACCESS_TOKEN_SECRET as string
   );
 
@@ -189,11 +189,11 @@ export const getUsers = (
 export const sendMail = async (user: UserSignIn) => {
   const response = await checkPassword(user);
 
-  if (response.status !== 200) {
+  if ((response as ServerResponse).status !== 200) {
     return response;
   }
 
-  if (response.data?.emailVerified) {
+  if ((response as Result).data?.emailVerified) {
     return { status: 200, message: "Your Email is already verified!" };
   }
 
@@ -213,5 +213,24 @@ export const sendMail = async (user: UserSignIn) => {
 };
 
 export const verifyotp = (email: string, otp: string) => {
-  return matchOtpWithFile(email, otp);
+  const response = matchOtpWithFile(email, otp);
+  return response;
+};
+
+export const sendResetMail = (email: string) => {
+  const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET as string, {
+    expiresIn: "600s",
+  });
+
+  return { token };
+};
+
+export const verifyToken = async (token: string, newPassword: string) => {
+  try {
+    const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string);
+    // @ts-ignore
+    return await updatePassword(data.email, newPassword);
+  } catch (err) {
+    return err;
+  }
 };

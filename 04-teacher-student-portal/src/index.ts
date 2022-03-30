@@ -10,7 +10,8 @@ import {
   students,
   teachers,
   userInfo,
-  verifyEmail,
+  getOtp,
+  resetPassword,
 } from "./routes/routes";
 
 const port = 3000;
@@ -22,8 +23,9 @@ app.post("/teacher-signup", signupTeacher);
 app.post("/student-signup", signupStudent);
 app.post("/login", login);
 app.post("/verify", checkOtp);
-app.post("/otp", verifyEmail);
+app.post("/otp", getOtp);
 app.post("/forgot", forgotPassword);
+app.post("/reset/:token", resetPassword);
 app.get("/myinfo", authorizeUser, userInfo);
 app.post("/givemarks", authorizeUser, onlyTeacher, giveMarks);
 app.get("/students", authorizeUser, onlyTeacher, students);

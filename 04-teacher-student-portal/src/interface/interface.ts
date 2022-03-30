@@ -13,6 +13,7 @@ export interface Student {
   password: string;
   marks?: Marks;
   emailVerified: boolean;
+  role?: Role;
 }
 
 export interface Marks {
@@ -29,6 +30,7 @@ export interface Teacher {
   email: string;
   password: string;
   emailVerified: boolean;
+  role?: Role;
 }
 
 export interface ServerResponse {
@@ -52,4 +54,15 @@ export interface userDataResponse {
 export interface EmailOtp {
   email: string;
   otp: string;
+}
+
+export interface Result {
+  status: number;
+  message: string;
+  data: any;
+}
+
+export interface foundUser {
+  role: Role;
+  index: number;
 }

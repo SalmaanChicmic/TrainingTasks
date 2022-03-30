@@ -35,7 +35,6 @@ export async function sendEmailToAddress(
     console.log("Message sent: %s", info.messageId);
     return true;
   } catch (err) {
-    console.log(err);
     return false;
   }
 }

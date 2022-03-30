@@ -33,8 +33,12 @@ const app = express();
 
 app.use(cors());
 
+app.use(express.json());
+
 app.use(function (req, res, next) {
   console.log("Request Ayi hai: ", req.url);
+
+  console.log(req.body);
 
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -44,7 +48,6 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use(express.json());
 app.get("/", home);
 app.post("/signup", signup);
 app.post("/login", login);

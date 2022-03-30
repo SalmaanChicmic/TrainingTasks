@@ -1,7 +1,7 @@
 import { openSync, readFileSync, writeFileSync } from "fs";
 import { string } from "joi";
 import { EmailOtp, Role, Student, Teacher } from "../interface/interface";
-import { setEmailVerified } from "./password.jwt";
+import { findUser, setEmailVerified } from "./password.jwt";
 
 const studentDataPath = __dirname + "/../../data/student.json";
 const teacherDataPath = __dirname + "/../../data/teachers.json";
@@ -54,3 +54,5 @@ export const matchOtpWithFile = (email: string, otp: string) => {
 
   return setEmailVerified(email);
 };
+
+export const writeNewPassword = (email: string, newPassword: string) => {};
