@@ -1,1 +1,8 @@
-[{"email":"sa1maankhan@yopmail.com","name":"Salmaan","password":"$2b$10$KUQofn/P1qlMWnFndNV/LeyzbZBKsjgIwM88hm7p1DIznARic7Api","emailVerified":false}]
+[
+  {
+    "email": "sa1maankhan@yopmail.com",
+    "name": "Salmaan",
+    "password": "$2b$10$KUQofn/P1qlMWnFndNV/LeyzbZBKsjgIwM88hm7p1DIznARic7Api",
+    "emailVerified": false
+  }
+]

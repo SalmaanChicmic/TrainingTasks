@@ -22,7 +22,7 @@ import {
 } from "../utils/utils.fs";
 import { checkPassword, updatePassword } from "../utils/password.jwt";
 import OTP from "otp-generator";
-import { sendEmailToAddress } from "../utils/email.nodemailer";
+import { sendEmailToAddress, sendTokenToMail } from "../utils/email.nodemailer";
 
 export const authorizeUser = (
   req: Request,
@@ -217,12 +217,22 @@ export const verifyotp = (email: string, otp: string) => {
   return response;
 };
 
-export const sendResetMail = (email: string) => {
+export const sendResetMail = async (email: string) => {
   const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET as string, {
     expiresIn: "600s",
   });
 
-  return { token };
+  if (await sendTokenToMail(email, token)) {
+    return {
+      status: 200,
+      message: "Email was sent to your registered email address.",
+    };
+  } else {
+    return {
+      status: 500,
+      message: "Something went wrong.",
+    };
+  }
 };
 
 export const verifyToken = async (token: string, newPassword: string) => {

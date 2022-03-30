@@ -153,7 +153,7 @@ export const checkOtp = (req: Request, res: Response) => {
   res.status(response.status).json(response);
 };
 
-export const forgotPassword = (req: Request, res: Response) => {
+export const forgotPassword = async (req: Request, res: Response) => {
   const body = req.body;
   const email = body.email;
   const result = findUser(email);
@@ -162,7 +162,7 @@ export const forgotPassword = (req: Request, res: Response) => {
     res.status((result as ServerResponse).status).send(result);
   }
 
-  const response = sendResetMail(email);
+  const response = await sendResetMail(email);
 
   res.send(response);
 };
