@@ -64,5 +64,5 @@ app.post(
 );
 
 app.listen(port, () => {
-  console.log("up and running");
+  console.log("up and running at ", port);
 });

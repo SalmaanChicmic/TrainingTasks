@@ -1,8 +1,1 @@
-[
-  {
-    "email": "sa1maankhan@yopmail.com",
-    "name": "Salmaan",
-    "password": "$2b$10$KUQofn/P1qlMWnFndNV/LeyzbZBKsjgIwM88hm7p1DIznARic7Api",
-    "emailVerified": false
-  }
-]
+[{"email":"sa1maankhan@yopmail.com","name":"Salmaan","password":"$2b$10$KUQofn/P1qlMWnFndNV/LeyzbZBKsjgIwM88hm7p1DIznARic7Api","emailVerified":false},{"name":"abcdef","email":"abcd@gmail.com","password":"$2b$10$aY/ZRTWXaX0Uv3PTrqT2Mul3L8M9bmftOf.pB/6DvUsWlc2/XfNq6","emailVerified":false},{"name":"testy","email":"test@yopmail.com","password":"$2b$10$/FLt0JCX2i8JlD4xtLwSEuK6Eqw8j6E744zZ/.GzzkRyZOOgyyerq","emailVerified":false}]
