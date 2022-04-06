@@ -1,11 +1,14 @@
 import { Request, response, Response } from "express";
 import {
+  addStudentToClass,
   addUser,
   getAccess,
   getStudent,
+  getStudentInClass,
   getTeacher,
   getUsers,
   giveMarksToStudent,
+  removeStudentFromClass,
   sendMail,
   sendResetMail,
   verifyotp,
@@ -21,10 +24,12 @@ import {
 } from "../interface/interface";
 import { findUser } from "../utils/password.jwt";
 import {
+  addToClassSchema,
   giveMarksSchema,
   loginSchema,
   otpSchema,
   studentSignupSchema,
+  subjectSchema,
   teacherSignupSchema,
 } from "../validation/schemas";
 
@@ -87,18 +92,20 @@ export const userInfo = (req: Request, res: Response) => {
 };
 
 export const giveMarks = (req: Request, res: Response) => {
-  const body = req.body;
+  const { email, marks } = req.body;
 
-  const result = giveMarksSchema.validate(body);
+  const result = giveMarksSchema.validate({ email, marks });
 
   if (result.error) {
     res.status(400).json(result.error);
     return;
   }
 
-  giveMarksToStudent(body.email, body.marks);
-
-  res.status(200).json({ message: "Done" });
+  if (giveMarksToStudent(email, marks)) {
+    res.status(200).json({ message: "Done" });
+  } else {
+    res.status(400).json({ message: "User not found" });
+  }
 };
 
 export const students = (req: Request, res: Response) => {
@@ -174,4 +181,51 @@ export const resetPassword = async (req: Request, res: Response) => {
   const response = await verifyToken(token, body.newPassword);
 
   res.send(response);
+};
+
+export const addToClass = (req: Request, res: Response) => {
+  const { email, subject } = req.body;
+
+  const result = addToClassSchema.validate({ email, subject });
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+  const response: ServerResponse = addStudentToClass(
+    result.value.email,
+    result.value.subject
+  );
+
+  res.status(response.status).json(response);
+};
+
+export const removeFromClass = (req: Request, res: Response) => {
+  const { email, subject } = req.params;
+
+  const result = addToClassSchema.validate({ email, subject });
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+  const response: ServerResponse = removeStudentFromClass(
+    result.value.email,
+    result.value.subject
+  );
+
+  res.status(response.status).json(response);
+};
+
+export const classInfo = (req: Request, res: Response) => {
+  const subject = req.params.subject;
+  const result = subjectSchema.validate({ subject });
+
+  if (result.error) {
+    res.status(400).json(result.error);
+    return;
+  }
+
+  const response = getStudentInClass(result.value.subject);
+
+  res.status(200).json(response);
 };

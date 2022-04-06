@@ -13,6 +13,9 @@ import {
   userInfo,
   getOtp,
   resetPassword,
+  addToClass,
+  classInfo,
+  removeFromClass,
 } from "./routes/routes";
 
 const port = 3000;
@@ -24,9 +27,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use(function (req, res, next) {
-  console.log("Request Ayi hai: ", req.url);
+  // console.log("Request Ayi hai: ", req.url);
 
-  console.log(req.body);
+  // console.log(req.body);
 
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -47,6 +50,14 @@ app.get("/myinfo", authorizeUser, userInfo);
 app.post("/givemarks", authorizeUser, onlyTeacher, giveMarks);
 app.get("/students", authorizeUser, onlyTeacher, students);
 app.get("/teachers", authorizeUser, onlyTeacher, teachers);
+app.post("/addToClass", authorizeUser, onlyTeacher, addToClass);
+app.get("/class/:subject", authorizeUser, onlyTeacher, classInfo);
+app.delete(
+  "/class/:subject/:email",
+  authorizeUser,
+  onlyTeacher,
+  removeFromClass
+);
 
 app.listen(port, () => {
   console.log("up and running at ", port);

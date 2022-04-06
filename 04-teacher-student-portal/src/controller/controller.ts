@@ -15,9 +15,14 @@ import jwt from "jsonwebtoken";
 import process from "../../config";
 import { NextFunction } from "express";
 import {
+  deleteStudentFromClass,
+  getAllClasses,
   matchOtpWithFile,
   openAndReadFile,
+  readStudentsFromClass,
+  writeMarksToClasses,
   writeOtpToFile,
+  writeStudentToClass,
   writeUserDataToFile,
 } from "../utils/utils.fs";
 import { checkPassword, updatePassword } from "../utils/password.jwt";
@@ -112,10 +117,12 @@ export const getStudent = (email: string): userDataResponse | undefined => {
   const user: Student = students.find((item) => item.email === email)!;
 
   if (user) {
+    const marks: Array<Marks> = getAllClasses(email);
+
     const cleanedUser = {
       name: user.name,
       email: user.email,
-      marks: user.marks ? user.marks : {},
+      marks,
     };
 
     return cleanedUser;
@@ -141,21 +148,18 @@ export const getTeacher = (email: string): userDataResponse | undefined => {
   return undefined;
 };
 
-export const giveMarksToStudent = (email: string, marks: Marks) => {
+export const giveMarksToStudent = (email: string, marks: Marks): boolean => {
   const students: Array<Student> = openAndReadFile("Student");
 
   const userIndex: number = students.findIndex((item) => item.email === email)!;
 
   if (userIndex === -1) {
-    return;
+    return false;
   }
 
-  students[userIndex] = {
-    ...students[userIndex],
-    marks: { ...students[userIndex].marks, ...marks },
-  };
+  writeMarksToClasses(email, marks);
 
-  writeUserDataToFile("Student", students);
+  return true;
 };
 
 export const getUsers = (
@@ -173,13 +177,15 @@ export const getUsers = (
   const cleaned: any = users.map(
     (item: Student | Teacher): userDataResponse | undefined => {
       if (role == "Teacher") return { email: item.email, name: item.name };
-      if (role == "Student")
+      if (role == "Student") {
+        const marks: Array<Marks> = getAllClasses(item.email);
+
         return {
           name: item.name,
           email: item.email,
-          // @ts-ignore
-          marks: item.marks ? item.marks : {},
+          marks,
         };
+      }
     }
   );
 
@@ -242,5 +248,32 @@ export const verifyToken = async (token: string, newPassword: string) => {
     return await updatePassword(data.email, newPassword);
   } catch (err) {
     return err;
+  }
+};
+
+export const addStudentToClass = (email: string, subject: string) => {
+  if (getStudent(email)) {
+    writeStudentToClass(email, subject);
+    return { status: 200, message: "Student successfully added." };
+  } else {
+    return { status: 200, message: "Student does not exists." };
+  }
+};
+
+export const removeStudentFromClass = (email: string, subject: string) => {
+  if (getStudent(email)) {
+    deleteStudentFromClass(email, subject);
+    return { status: 200, message: "Student successfully removed." };
+  } else {
+    return { status: 200, message: "Student does not exists." };
+  }
+};
+
+export const getStudentInClass = (subject: string) => {
+  const students = readStudentsFromClass(subject);
+  if (!Object.keys(students).length) {
+    return { status: 200, message: "Class is empty." };
+  } else {
+    return { [subject]: students };
   }
 };

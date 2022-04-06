@@ -66,3 +66,5 @@ export interface foundUser {
   role: Role;
   index: number;
 }
+
+type subject = 
