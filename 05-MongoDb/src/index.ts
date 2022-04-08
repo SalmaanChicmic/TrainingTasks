@@ -1,5 +1,4 @@
 import express from "express";
-import { authorizeUser, onlyTeacher } from "./controller/controller";
 import cors from "cors";
 import {
   checkOtp,
@@ -19,20 +18,19 @@ import {
 } from "./routes/routes";
 
 import { ConnectDatabase } from "./Database/mongo";
+import { authorizeUser } from "./middleware/authorize";
+import { onlyTeacher } from "./middleware/onlyTeacher";
 
 const port = 3000;
 
 const app = express();
 
-app.use(cors());
-
 app.use(express.json());
 
+// for allowing requests from other origins
+
+app.use(cors());
 app.use(function (req, res, next) {
-  // console.log("Request Ayi hai: ", req.url);
-
-  // console.log(req.body);
-
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
@@ -41,6 +39,7 @@ app.use(function (req, res, next) {
   next();
 });
 
+// routes
 app.post("/teacher-signup", signupTeacher);
 app.post("/student-signup", signupStudent);
 app.post("/login", login);
@@ -55,7 +54,7 @@ app.get("/teachers", authorizeUser, onlyTeacher, teachers);
 app.post("/addToClass", authorizeUser, onlyTeacher, addToClass);
 app.get("/class/:subject", authorizeUser, onlyTeacher, classInfo);
 app.delete(
-  "/class/:subject/:email",
+  "/student/:subject/:email",
   authorizeUser,
   onlyTeacher,
   removeFromClass

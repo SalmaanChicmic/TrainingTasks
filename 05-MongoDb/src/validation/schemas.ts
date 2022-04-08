@@ -1,5 +1,13 @@
 import Joi from "joi";
-import { subjects } from "../utils/utils.fs";
+
+const subjects = [
+  "english",
+  "hindi",
+  "computers",
+  "maths",
+  "science",
+  "physical",
+];
 
 const passwordRegex =
   /^(?=.{6,})(?=.*[a-z])(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/;
@@ -44,6 +52,14 @@ export const otpSchema = Joi.object().keys({
 });
 
 export const addToClassSchema = Joi.object().keys({
+  studentEmail: Joi.string().min(3).required().email(),
+  teacherEmail: Joi.string().min(3).required().email(),
+  subject: Joi.string()
+    .valid(...subjects)
+    .required(),
+});
+
+export const removeStudentFromClassSchema = Joi.object().keys({
   email: Joi.string().min(3).required().email(),
   subject: Joi.string()
     .valid(...subjects)

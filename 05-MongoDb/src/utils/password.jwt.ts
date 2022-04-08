@@ -6,9 +6,7 @@ import {
   Teacher,
   UserSignIn,
 } from "../interface/interface";
-import { openAndReadFile, writeUserDataToFile } from "./utils.fs";
 import bcrypt from "bcrypt";
-import { writeFileSync } from "fs";
 import { UserModel } from "../Database/Schemas/user.model";
 
 export async function checkPassword(
@@ -40,7 +38,7 @@ export async function setEmailVerified(email: string) {
     await UserModel.updateOne({ email }, { emailVerified: true });
     return { status: 200, message: "Email Verified." };
   } catch (err) {
-    return { status: 400, message: "User not found." };
+    return { status: 404, message: "User not found." };
   }
 }
 

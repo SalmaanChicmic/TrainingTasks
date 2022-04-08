@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, connect, ConnectOptions } from "mongoose";
+import { connect } from "mongoose";
 
 const MONGODB_URL = "mongodb://127.0.0.1:27017";
 

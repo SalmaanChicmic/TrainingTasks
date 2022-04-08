@@ -1,8 +1,6 @@
 import bcrypt from "bcrypt";
-import { Request, response, Response } from "express";
 import {
   Marks,
-  Result,
   Role,
   ServerResponse,
   Student,
@@ -14,64 +12,14 @@ import {
 } from "../interface/interface";
 import jwt from "jsonwebtoken";
 import process from "../../config";
-import { NextFunction } from "express";
-import {
-  deleteStudentFromClass,
-  getAllClasses,
-  matchOtpWithFile,
-  openAndReadFile,
-  readStudentsFromClass,
-  writeMarksToClasses,
-  writeOtpToFile,
-  writeStudentToClass,
-  writeUserDataToFile,
-} from "../utils/utils.fs";
+import { matchOtp } from "../utils/utils.mongo";
 import { checkPassword, updatePassword } from "../utils/password.jwt";
 import OTP from "otp-generator";
 import { sendEmailToAddress, sendTokenToMail } from "../utils/email.nodemailer";
 import { UserModel } from "../Database/Schemas/user.model";
-import { students } from "../routes/routes";
 import { OtpModel } from "../Database/Schemas/otps.models";
 import { MarksModel } from "../Database/Schemas/marks.model";
-
-export const authorizeUser = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.headers.authorization) {
-    res.status(400).send("Access Token Not Present");
-  } else {
-    const token: string = req.headers.authorization.split(" ")[1];
-    try {
-      const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string);
-
-      req.body.user = {
-        ...req.body.user,
-        ...(data as jwt.JwtPayload),
-      };
-
-      next();
-    } catch (err) {
-      res.status(403).json({ status: 403, message: "Not Authorized" });
-    }
-  }
-};
-
-export const onlyTeacher = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const role: Role = req.body.user.role;
-  if (role === "Teacher") {
-    next();
-  } else {
-    res
-      .status(403)
-      .json({ status: 403, message: "This route is only for teachers" });
-  }
-};
+import { ClassModel } from "../Database/Schemas/classes.model";
 
 export const addUser = async (
   role: Role,
@@ -85,7 +33,7 @@ export const addUser = async (
   const existingUser = await UserModel.find({ email: user.email });
 
   if (existingUser.length)
-    return { status: 400, message: "User Already Exists" };
+    return { status: 409, message: "User Already Exists" };
 
   // insery new User
   UserModel.insertMany([{ ...user, role }]);
@@ -101,7 +49,7 @@ export const getAccess = async (user: UserSignIn): Promise<ServerResponse> => {
   }
 
   if (!(response as ServerResponse).data.emailVerified) {
-    return { status: 400, message: "Your Email is not verified!" };
+    return { status: 403, message: "Your Email is not verified!" };
   }
 
   let accessToken: string = jwt.sign(
@@ -131,13 +79,13 @@ export const getUser = async (
 
   if (userData.role === "Student") {
     const response = await MarksModel.findOne(
-      { _id: userData._id },
+      { studentId: userData._id },
       { _id: 0, _v: 0 }
     );
     return {
       name: userData.name,
       email: userData.email,
-      marks: response.marks,
+      marks: response ? response.marks : {},
     };
   }
 };
@@ -149,7 +97,7 @@ export const giveMarksToStudent = async (
   try {
     await MarksModel.updateOne(
       {
-        _id: id,
+        studentId: id,
       },
       { marks: { ...marks } },
       { upsert: true }
@@ -180,7 +128,7 @@ export const sendMail = async (user: UserSignIn) => {
     return response;
   }
 
-  if ((response as Student | Teacher).emailVerified) {
+  if ((response as ServerResponse).data.emailVerified) {
     return { status: 200, message: "Your Email is already verified!" };
   }
 
@@ -201,12 +149,12 @@ export const sendMail = async (user: UserSignIn) => {
   if (await sendEmailToAddress(user.email, otp)) {
     return { status: 200, message: "Success." };
   } else {
-    return { status: 400, message: "Something went wrong." };
+    return { status: 500, message: "Internal Server Error." };
   }
 };
 
 export const verifyotp = async (email: string, otp: string) => {
-  const response = await matchOtpWithFile(email, otp);
+  const response = await matchOtp(email, otp);
   return response;
 };
 
@@ -238,12 +186,20 @@ export const verifyToken = async (token: string, newPassword: string) => {
   }
 };
 
-export const addStudentToClass = async (email: string, subject: string) => {
-  if (await getUser(email)) {
-    writeStudentToClass(email, subject);
+export const addStudentToClass = async (
+  teacherEmail: string,
+  studentEmail: string,
+  subject: string
+) => {
+  if (await getUser(studentEmail)) {
+    await ClassModel.updateOne(
+      { teacher: teacherEmail, subject },
+      { $addToSet: { students: studentEmail } },
+      { upsert: true }
+    );
     return { status: 200, message: "Student successfully added." };
   } else {
-    return { status: 200, message: "Student does not exists." };
+    return { status: 404, message: "Student not found." };
   }
 };
 
@@ -251,20 +207,29 @@ export const removeStudentFromClass = async (
   email: string,
   subject: string
 ) => {
-  if (await getUser(email)) {
-    deleteStudentFromClass(email, subject);
+  console.log(email, subject);
+
+  try {
+    await ClassModel.updateOne({ subject }, { $pull: { students: email } });
+
     return { status: 200, message: "Student successfully removed." };
-  } else {
-    return { status: 200, message: "Student does not exists." };
+  } catch (err) {
+    // console.log(err);
+
+    return { status: 404, message: "Student not found." };
   }
 };
 
-export const getStudentInClass = (subject: string) => {
-  const students = readStudentsFromClass(subject);
-  if (!Object.keys(students).length) {
+export const getStudentInClass = async (subject: string) => {
+  const classInfo = await ClassModel.find(
+    { subject },
+    { _id: 0, subject: 1, teacher: 1, students: 1 }
+  );
+
+  if (!classInfo) {
     return { status: 200, message: "Class is empty." };
   } else {
-    return { [subject]: students };
+    return { [subject]: classInfo };
   }
 };
 

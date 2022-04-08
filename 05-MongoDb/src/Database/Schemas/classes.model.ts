@@ -1,7 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 
 const ClassSchema = new Schema({
-  teacher: Schema.Types.ObjectId,
+  teacher: String,
+  students: [String],
+  subject: String,
 });
 
-export const ClassModel = mongoose.model("user", ClassSchema, "Users");
+export const ClassModel = mongoose.model("class", ClassSchema, "Classes");
