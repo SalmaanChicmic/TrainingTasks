@@ -63,31 +63,21 @@ export const getAccess = async (user: UserSignIn): Promise<ServerResponse> => {
 export const getUser = async (
   email: string
 ): Promise<userDataResponse | undefined> => {
-  const userData: User = (await UserModel.findOne(
-    { email },
-    { _id: 1, name: 1, email: 1, role: 1 }
-  )) as unknown as User;
+  const userData: Array<userDataResponse> = (await UserModel.aggregate([
+    { $match: { email } },
+    {
+      $lookup: {
+        from: "Marks",
+        localField: "_id",
+        foreignField: "studentId",
+        as: "data",
+      },
+    },
+    { $unwind: { path: "$data", preserveNullAndEmptyArrays: true } },
+    { $project: { name: 1, role: 1, marks: "$data.marks" } },
+  ])) as unknown as Array<userDataResponse>;
 
-  if (!userData) return;
-
-  if (userData.role === "Teacher") {
-    return {
-      name: userData.name,
-      email: userData.email,
-    };
-  }
-
-  if (userData.role === "Student") {
-    const response = await MarksModel.findOne(
-      { studentId: userData._id },
-      { _id: 0, _v: 0 }
-    );
-    return {
-      name: userData.name,
-      email: userData.email,
-      marks: response ? response.marks : {},
-    };
-  }
+  return userData[0];
 };
 
 export const giveMarksToStudent = async (

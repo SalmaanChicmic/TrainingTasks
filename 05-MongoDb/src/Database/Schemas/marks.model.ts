@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 const MarksSchema = new Schema({
-  studentId: Schema.Types.ObjectId,
+  studentId: { type: Schema.Types.ObjectId, ref: "Users" },
   marks: {
     english: Number,
     hindi: Number,
